@@ -44,22 +44,25 @@ Sub URLToCellPictureInsert()
     If xRg Is Nothing Then Exit Sub
     Application.ScreenUpdating = False
     For i = 1 To Rng.Count
-    filenam = Rng(i)
-    ActiveSheet.Pictures.Insert(filenam).Select
-    Set Pshp = Selection.ShapeRange.Item(1)
-    If Pshp Is Nothing Then GoTo lab
-    xCol = cell.Column + 1
-    Set xRg = xRg.Offset(i - 1, 0)
-    With Pshp
-        LockAspectRatio = msoFalse
-        xRg.Width = 42
-        xRg.Height = 42
-        xRg.Top = xRg.Top + (xRg.Height - .Height) / 2
-        xRg.Left = xRg.Left + (xRg.Width - .Width) / 2
-    End With
+        filenam = Rng(i)
+        ActiveSheet.Pictures.Insert(filenam).Select
+        Set Pshp = Selection.ShapeRange.Item(1)
+        If Pshp Is Nothing Then GoTo lab
+        xCol = cell.Column + 1
+        Set xRg = xRg.Offset(i - 1, 0)
+        With Pshp
+            LockAspectRatio = msoFalse
+            .Width = xRg.Width
+            .Height = xRg.Height
+            '.Top = xRg.Top + (xRg.Height - .Height) / 2
+            '.Left = xRg.Left + (xRg.Width - .Width) / 2
+            .Left = xRg.Left
+            .Top = xRg.Top
+        End With
 lab:
-    Set Pshp = Nothing
-    Range("A2").Select
+        Set Pshp = Nothing
+        Range("A2").Select
     Next
     Application.ScreenUpdating = True
 End Sub
+
