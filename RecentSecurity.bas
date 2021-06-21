@@ -16,9 +16,21 @@ Public Function GetRecentSecurity()
     RecentRequest.Method = HttpGet
     Dim RecentResponse As WebResponse
     Dim codes As Object
-
+    Dim today As String
+    Dim now As String
+    Dim strength As String
+    Dim url As String
 
 Try:
+    today = Worksheets("recent").Cells(1, 2).Text
+    now = Worksheets("recent").Cells(1, 4).Text
+    strength = Worksheets("recent").Cells(1, 6).Text
+    If Int(Left(now, 2)) > 18 Or Int(Left(now, 2)) < 9 Then
+        now = "1800"
+    End If
+    
+    url = "http://jrimchoi.iptime.org/samsung/recent/" + today + "/" + now + "/" + strength
+    Debug.Print url
     Set Response = Client.GetJson("http://jrimchoi.iptime.org/samsung/recent/20210621/1800/100")
     Dim Json As Object
     If Response.StatusCode = WebStatusCode.Ok Then
@@ -36,7 +48,7 @@ Try:
             Worksheets("recent").Cells(i + 2, 9).Value = Json.Item(i)("highPrice")
             Worksheets("recent").Cells(i + 2, 10).Value = Json.Item(i)("lowPrice")
             Worksheets("recent").Cells(i + 2, 11).Value = Json.Item(i)("dayChartUrl")
-            Debug.Print Json.Item(i)("lowPrice")
+            'Debug.Print Json.Item(i)("lowPrice")
         Next i
     End If
 
