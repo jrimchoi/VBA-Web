@@ -32,80 +32,43 @@ Public Function GetFid3213()
     Dim RecentRequest As New WebRequest
     RecentRequest.Method = HttpGet
     Dim RecentResponse As WebResponse
-    
-    startRow = 2
-    endRow = 2571
-    
-    Dim codes(2570) As String
-    Dim names(2570) As String
-    
-    Worksheets("stockinfo").Activate
-    For i = 0 To endRow - startRow
-        codes(i) = ActiveWorkbook.Worksheets("stockinfo").Cells(i + 2, 2).Value
-        names(i) = ActiveWorkbook.Worksheets("stockinfo").Cells(i + 2, 4).Value
-    Next i
-    
-    Worksheets("stockmember").Activate
-    Dim rowNumber As Integer
-    
-    For i = startRow To endRow
-        code = codes(i - startRow)
+    Dim codes As Object
+
+
 Try:
-            rowNumber = i
-            Debug.Print i
-            fidInput = "[{""idx"":""fid3213"",""gid"":""3212"",""fidCodeBean"":{""3"":""" + code + """,""9104"":""J"",""9220"":""2""},""outFid"":""500,4,5,6,7,8,912,911,913,1547,915,917,914,2121,916,918,919,920,837,839,838,921"",""isList"":""1"",""order"":""ASC"",""reqCnt"":1,""actionKey"":""0"",""saveBufLen"":""1"",""saveBuf"":""1""}]"
-            Set Response = Client.PostJson("https://www.samsungpop.com/wts/fidBuilder.do", fidInput)
+            Set Response = Client.GetJson("http://jrimchoi.iptime.org/samsung/fid3213/20210621")
             Dim Json As Object
             If Response.StatusCode = WebStatusCode.Ok Then
                 
-                Set Json = JsonConverter.ParseJson(StrConv(Response.Body, vbUnicode))
-                
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 2).Value = codes(i - startRow)
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 3).Value = names(i - startRow)
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 4).Value = Json("fid3213")("data").Item(1)("500")
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 5).Value = Json("fid3213")("data").Item(1)("912")
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 6).Value = Json("fid3213")("data").Item(1)("837")
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 7).Value = Json("fid3213")("data").Item(1)("913")
-                ActiveWorkbook.Worksheets("stockmember").Cells(i, 8).Value = Json("fid3213")("data").Item(1)("1547")
+                Set Json = JsonConverter.ParseJson(Response.Content)
+                For i = 1 To Json.Count
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 2).Value = Json.Item(i)("종목코드")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 3).Value = Json.Item(i)("일자")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 4).Value = Json.Item(i)("현재가")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 5).Value = Json.Item(i)("전일대비")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 6).Value = Json.Item(i)("등락율")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 7).Value = Json.Item(i)("거래량")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 8).Value = Json.Item(i)("개인")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 9).Value = Json.Item(i)("기관")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 10).Value = Json.Item(i)("외국인")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 11).Value = Json.Item(i)("프로그램")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 12).Value = Json.Item(i)("연기금")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 13).Value = Json.Item(i)("금융투자")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 14).Value = Json.Item(i)("보험")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 15).Value = Json.Item(i)("투신")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 16).Value = Json.Item(i)("사모펀드")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 17).Value = Json.Item(i)("은행")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 18).Value = Json.Item(i)("기타금융")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 19).Value = Json.Item(i)("기타법인")
+                    ActiveWorkbook.Worksheets("members").Cells(i + 2, 20).Value = Json.Item(i)("기타외국인")
+                    Debug.Print i
+                Next i
             End If
-            Set RecentResponse = Client.GetJson("https://www.stockplus.com/api/securities.json?ids=KOREA-A" + code)
-            Dim RecentJson As Object
-            If RecentResponse.StatusCode = WebStatusCode.Ok Then
-                
-                Set RecentJson = JsonConverter.ParseJson(RecentResponse.Content)
-        
-                Worksheets("stockmember").Cells(rowNumber, 9).Value = RecentJson("recentSecurities").Item(1)("tradePrice")
-                Worksheets("stockmember").Cells(rowNumber, 10).Value = RecentJson("recentSecurities").Item(1)("changePriceRate") * 100
-                Worksheets("stockmember").Cells(rowNumber, 11).Value = RecentJson("recentSecurities").Item(1)("changePrice")
-                Worksheets("stockmember").Cells(rowNumber, 12).Value = RecentJson("recentSecurities").Item(1)("openingPrice")
-                Worksheets("stockmember").Cells(rowNumber, 13).Value = RecentJson("recentSecurities").Item(1)("highPrice")
-                Worksheets("stockmember").Cells(rowNumber, 14).Value = RecentJson("recentSecurities").Item(1)("lowPrice")
-            End If
+
 Catch:
-            Debug.Print "Error : " + code
+            Debug.Print 'End'
 
-    Next i
 
-End Function
-
-Public Function GetRecentSecurity(code As String, rowNumber As Integer)
-    Dim Client As New WebClient
-    Dim Request As New WebRequest
-    Request.Method = HttpGet
-    Dim Response As WebResponse
-    Set Response = Client.GetJson("https://www.stockplus.com/api/securities.json?ids=KOREA-A" + code)
-    Dim Json As Object
-    If Response.StatusCode = WebStatusCode.Ok Then
-        
-        Set Json = JsonConverter.ParseJson(Response.Content)
-        Debug.Print Response.Content
-
-        Worksheets("stockmember").Cells(rowNumber, 9).Value = Json("recentSecurities").Item(1)("tradePrice")
-        Worksheets("stockmember").Cells(rowNumber, 10).Value = Json("recentSecurities").Item(1)("changePriceRate")
-        Worksheets("stockmember").Cells(rowNumber, 11).Value = Json("recentSecurities").Item(1)("openingPrice")
-        Worksheets("stockmember").Cells(rowNumber, 12).Value = Json("recentSecurities").Item(1)("highPrice")
-        Worksheets("stockmember").Cells(rowNumber, 13).Value = Json("recentSecurities").Item(1)("lowPrice")
-    End If
 End Function
 
 
